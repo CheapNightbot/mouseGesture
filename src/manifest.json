@@ -10,6 +10,31 @@
         "128": "images/mouseGesture-128.png"
     },
     "action": {
-        "default_icon": "images/mouseGesture-16.png"
-    }
+        "default_icon": {
+            "16": "images/mouseGesture-16.png",
+            "32": "images/mouseGesture-32.png",
+            "48": "images/mouseGesture-48.png",
+            "128": "images/mouseGesture-128.png"
+        }
+    },
+    "background": {
+        "service_worker": "service-worker.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "scripts/content.js"
+            ],
+            "css": [
+                "styles/content.css"
+            ]
+        }
+    ],
+    "permissions": [
+        "activeTab",
+        "scripting"
+    ]
 }
