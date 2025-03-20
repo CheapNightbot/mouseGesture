@@ -1,6 +1,6 @@
 const contextMenuHandler = (event) => event.preventDefault();
 
-let gesturePoints = [];
+let gesturePoints = [{x: 0, y: 0}];
 let detectedGesture;
 let hintText;
 let mouseDown = false;
