@@ -1,6 +1,7 @@
 const contextMenuHandler = (event) => event.preventDefault();
 
 let gesturePoints = [];
+let detectedGesture;
 let hintText;
 let mouseDown = false;
 let mouseTrail;
@@ -87,16 +88,12 @@ document.addEventListener('mousemove', (event) => {
         // Analyze the angles to recognize the gesture
         angles.forEach(angle => {
             if (angle > 45 && angle <= 135) {
-                console.log("Down");
                 gestureSequence.push("Down");
             } else if (angle >= -45 && angle <= 45) {
-                console.log("Right");
                 gestureSequence.push("Right");
             } else if (angle >= -135 && angle <= -45) {
-                console.log("Up");
                 gestureSequence.push("Up");
             } else if ((angle > 135 && angle <= 180) || (angle >= -180 && angle <= -135)) {
-                console.log("Left");
                 gestureSequence.push("Left");
             }
         });
@@ -104,28 +101,30 @@ document.addEventListener('mousemove', (event) => {
         // Remove consecutive duplicates to simplify the sequence
         const simplifiedSequence = gestureSequence.filter(
             (dir, index) => index === 0 || dir !== gestureSequence[index - 1]
-        );
-
-        console.log("Simplified Sequence:", simplifiedSequence);
+        )
 
         // Recognize gestures based on the simplified sequence
         if (simplifiedSequence.join(" → ") === "Down → Right") {
-            hintText.innerHTML = 'L Shape Detected<br>↘';
-            console.log("L Shape Detected");
+            hintText.innerHTML = '↳<br>Close tab';
+            detectedGesture = "closeTab";
         } else if (simplifiedSequence.join(" → ") === "Right → Down") {
-            hintText.innerHTML = 'Reverse L Detected<br>↗';
-            console.log("Reverse L Detected");
+            hintText.innerHTML = '↴<br>Refresh';
+            detectedGesture = "refresh";
         } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Right") {
             hintText.innerHTML = '→<br>Forward';
+            detectedGesture = "goForward";
         } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Left") {
             hintText.innerHTML = '←<br>Go Back';
+            detectedGesture = "goBack";
         } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Up") {
-            hintText.innerHTML = '↑<br>Upwards';
+            hintText.innerHTML = '↑<br>Scroll up';
+            detectedGesture = "scrollUp";
         } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Down") {
-            hintText.innerHTML = '↓<br>Downwards';
+            hintText.innerHTML = '↓<br>Scroll down';
+            detectedGesture = "scrollDown";
         } else {
             hintText.innerHTML = 'Invalid gesture';
-            console.log("Invalid gesture");
+            detectedGesture = "invalid";
         }
 
         // Prevent the context menu from appearing
@@ -153,12 +152,32 @@ document.addEventListener('mouseup', (e) => {
         }
 
         // Check if moved backward (to the left)
-        if (1 === 0) {
+        if (detectedGesture === "goBack") {
             chrome.runtime.sendMessage({ action: 'goBack' });
             gesturePoints = []; // reset gesturePoints once gesture is complete
             // Check if moved forward (to the right)
-        } else if (5 === 6) {
+        } else if (detectedGesture === "goForward") {
             chrome.runtime.sendMessage({ action: 'goForward' });
+            gesturePoints = []; // reset gesturePoints once gesture is complete
+        }
+        // Check if moved up
+        else if (detectedGesture === "scrollUp") {
+            chrome.runtime.sendMessage({ action: 'scrollUp' });
+            gesturePoints = []; // reset gesturePoints once gesture is complete
+        }
+            // Check if moved down
+        else if (detectedGesture === "scrollDown") {
+            chrome.runtime.sendMessage({ action: 'scrollDown' });
+            gesturePoints = []; // reset gesturePoints once gesture is complete
+        }
+        // Check if moved down then right
+        else if (detectedGesture === "refresh") {
+            chrome.runtime.sendMessage({ action: 'refresh' });
+            gesturePoints = []; // reset gesturePoints once gesture is complete
+        }
+            // Check if moved down then right
+        else if (detectedGesture === "closeTab") {
+            chrome.runtime.sendMessage({ action: 'closeTab' });
             gesturePoints = []; // reset gesturePoints once gesture is complete
         }
         else {
