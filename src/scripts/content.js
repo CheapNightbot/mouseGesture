@@ -117,10 +117,10 @@ document.addEventListener('mousemove', (event) => {
             hintText.innerHTML = '←<br>Go Back';
             detectedGesture = "goBack";
         } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Up") {
-            hintText.innerHTML = '↑<br>Scroll up';
+            hintText.innerHTML = '↑<br>Scroll to top';
             detectedGesture = "scrollUp";
         } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Down") {
-            hintText.innerHTML = '↓<br>Scroll down';
+            hintText.innerHTML = '↓<br>Scroll to bottom';
             detectedGesture = "scrollDown";
         } else {
             hintText.innerHTML = 'Invalid gesture';
@@ -162,12 +162,18 @@ document.addEventListener('mouseup', (e) => {
         }
         // Check if moved up
         else if (detectedGesture === "scrollUp") {
-            chrome.runtime.sendMessage({ action: 'scrollUp' });
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
             gesturePoints = []; // reset gesturePoints once gesture is complete
         }
             // Check if moved down
         else if (detectedGesture === "scrollDown") {
-            chrome.runtime.sendMessage({ action: 'scrollDown' });
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
             gesturePoints = []; // reset gesturePoints once gesture is complete
         }
         // Check if moved down then right

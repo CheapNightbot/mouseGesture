@@ -14,12 +14,4 @@ chrome.runtime.onMessage.addListener((request, sender) => {
     if (request.action === 'closeTab') {
         chrome.tabs.remove(sender.tab.id);
     }
-
-    if (request.action === 'scrollUp') {
-        chrome.tabs.executeScript(sender.tab.id, { code: 'window.scrollBy(0, -100)' });
-    }
-
-    if (request.action === 'scrollDown') {
-        chrome.tabs.executeScript(sender.tab.id, { code: 'window.scrollBy(0, 100)' });
-    }
 });
