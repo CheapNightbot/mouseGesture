@@ -7,7 +7,7 @@ Extension that adds mouse gestures to your browser. Easily navigate with customi
 **⚠ It's not complete! Only the basic idea has been implemented.**
 
 > right click and hold then draw the gesture by moving mouse (it's Google Chrome below):
-> ![test](https://github.com/user-attachments/assets/17f26caf-7b86-4974-8c9a-abb63bc79cd9)
+> ![test](https://github.com/user-attachments/assets/5716cd88-5122-46b8-82ce-42332350be0d)
 
 ***
 
