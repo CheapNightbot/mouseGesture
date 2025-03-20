@@ -1,18 +1,38 @@
 const contextMenuHandler = (event) => event.preventDefault();
 
+let gesturePoints = [];
+let hintText;
 let mouseDown = false;
-let startX;
+let mouseTrail;
 let previousX = 0;
 let previousY = 0;
-let mouseTrail;
-let hintText;
 
+// Ramer-Douglas-Peucker algorithm
+// https://rosettacode.org/wiki/Ramer-Douglas-Peucker_line_simplification#JavaScript
+const RDP = (l, eps) => {
+    const last = l.length - 1;
+    const p1 = l[0];
+    const p2 = l[last];
+    const x21 = p2.x - p1.x;
+    const y21 = p2.y - p1.y;
+
+    const [dMax, x] = l.slice(1, last)
+        .map(p => Math.abs(y21 * p.x - x21 * p.y + p2.x * p1.y - p2.y * p1.x))
+        .reduce((p, c, i) => {
+            const v = Math.max(p[0], c);
+            return [v, v === p[0] ? p[1] : i + 1];
+        }, [-1, 0]);
+
+    if (dMax > eps) {
+        return [...RDP(l.slice(0, x + 1), eps), ...RDP(l.slice(x), eps).slice(1)];
+    }
+    return [l[0], l[last]]
+};
 
 document.addEventListener('mousedown', (event) => {
     // Right mouse button
     if (event.button === 2) {
         mouseDown = true;
-        startX = event.clientX;
 
         mouseTrail = document.createElement('div');
         mouseTrail.id = 'mouse-trail';
@@ -47,12 +67,65 @@ document.addEventListener('mousemove', (event) => {
         previousX = event.clientX;
         previousY = event.clientY;
 
-        if ((startX - previousX) > 100) {
-            hintText.innerHTML = '←<br>Go Back';
-        } else if ((startX - previousX) < -100) {
+        gesturePoints.push({ x: event.clientX, y: event.clientY });
+        gesturePoints = RDP(gesturePoints, 1);
+
+        // Calculate angles between consecutive points
+        const angles = [];
+        for (let i = 1; i < gesturePoints.length; i++) {
+            const p1 = gesturePoints[i - 1];
+            const p2 = gesturePoints[i];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Angle in degrees
+            angles.push(angle);
+        }
+
+        // Initialize an array to store the sequence of directions
+        const gestureSequence = [];
+
+        // Analyze the angles to recognize the gesture
+        angles.forEach(angle => {
+            if (angle > 45 && angle <= 135) {
+                console.log("Down");
+                gestureSequence.push("Down");
+            } else if (angle >= -45 && angle <= 45) {
+                console.log("Right");
+                gestureSequence.push("Right");
+            } else if (angle >= -135 && angle <= -45) {
+                console.log("Up");
+                gestureSequence.push("Up");
+            } else if ((angle > 135 && angle <= 180) || (angle >= -180 && angle <= -135)) {
+                console.log("Left");
+                gestureSequence.push("Left");
+            }
+        });
+
+        // Remove consecutive duplicates to simplify the sequence
+        const simplifiedSequence = gestureSequence.filter(
+            (dir, index) => index === 0 || dir !== gestureSequence[index - 1]
+        );
+
+        console.log("Simplified Sequence:", simplifiedSequence);
+
+        // Recognize gestures based on the simplified sequence
+        if (simplifiedSequence.join(" → ") === "Down → Right") {
+            hintText.innerHTML = 'L Shape Detected<br>↘';
+            console.log("L Shape Detected");
+        } else if (simplifiedSequence.join(" → ") === "Right → Down") {
+            hintText.innerHTML = 'Reverse L Detected<br>↗';
+            console.log("Reverse L Detected");
+        } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Right") {
             hintText.innerHTML = '→<br>Forward';
+        } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Left") {
+            hintText.innerHTML = '←<br>Go Back';
+        } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Up") {
+            hintText.innerHTML = '↑<br>Upwards';
+        } else if (simplifiedSequence.length === 1 && simplifiedSequence[0] === "Down") {
+            hintText.innerHTML = '↓<br>Downwards';
         } else {
             hintText.innerHTML = 'Invalid gesture';
+            console.log("Invalid gesture");
         }
 
         // Prevent the context menu from appearing
@@ -69,6 +142,7 @@ document.addEventListener('mouseup', (e) => {
     // Right mouse button
     if (e.button === 2) {
         mouseDown = false;
+
         if (mouseTrail) {
             document.body.removeChild(mouseTrail);
             mouseTrail = null;
@@ -79,12 +153,16 @@ document.addEventListener('mouseup', (e) => {
         }
 
         // Check if moved backward (to the left)
-        if (previousX < startX - 100) {
+        if (1 === 0) {
             chrome.runtime.sendMessage({ action: 'goBack' });
-
+            gesturePoints = []; // reset gesturePoints once gesture is complete
             // Check if moved forward (to the right)
-        } else if (previousX > startX + 100) {
+        } else if (5 === 6) {
             chrome.runtime.sendMessage({ action: 'goForward' });
+            gesturePoints = []; // reset gesturePoints once gesture is complete
+        }
+        else {
+            gesturePoints = []; // reset gesturePoints
         }
     }
 });
