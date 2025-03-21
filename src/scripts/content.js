@@ -1,6 +1,6 @@
 const contextMenuHandler = (event) => event.preventDefault();
 
-let gesturePoints = [{x: 0, y: 0}];
+let gesturePoints = [{ x: 0, y: 0 }];
 let detectedGesture;
 let hintText;
 let mouseDown = false;
@@ -78,8 +78,13 @@ document.addEventListener('mousemove', (event) => {
             const p2 = gesturePoints[i];
             const dx = p2.x - p1.x;
             const dy = p2.y - p1.y;
-            const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Angle in degrees
-            angles.push(angle);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Only calculate the angle if the distance is greater than 10 pixels
+            if (distance > 10) {
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Angle in degrees
+                angles.push(angle);
+            }
         }
 
         // Initialize an array to store the sequence of directions
@@ -168,7 +173,7 @@ document.addEventListener('mouseup', (e) => {
             });
             gesturePoints = []; // reset gesturePoints once gesture is complete
         }
-            // Check if moved down
+        // Check if moved down
         else if (detectedGesture === "scrollDown") {
             window.scrollTo({
                 top: document.body.scrollHeight,
@@ -181,7 +186,7 @@ document.addEventListener('mouseup', (e) => {
             chrome.runtime.sendMessage({ action: 'refresh' });
             gesturePoints = []; // reset gesturePoints once gesture is complete
         }
-            // Check if moved down then right
+        // Check if moved down then right
         else if (detectedGesture === "closeTab") {
             chrome.runtime.sendMessage({ action: 'closeTab' });
             gesturePoints = []; // reset gesturePoints once gesture is complete
